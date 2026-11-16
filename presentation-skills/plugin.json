@@ -1,0 +1,11 @@
+{
+  "name": "presentation-skills",
+  "displayName": "Presentation_skills",
+  "description": "簡報設計與口頭報告方法論（萃取自施金波《04 簡報技巧》）：避雷檢核、簡報美感、資訊主幹、資訊視覺化、金字塔與 SCQA、提案力與不背稿。製作任何簡報相關內容時自動套用。",
+  "version": "1.0.0",
+  "suggestedPrompts": [
+    "幫我把這份文件整理成 10 頁以內的簡報大綱，並附講者備忘稿",
+    "用 SCQA 架構幫我寫一段 3 分鐘的提案開場",
+    "檢查這份投影片有哪些常犯錯誤並提出修改建議"
+  ]
+}

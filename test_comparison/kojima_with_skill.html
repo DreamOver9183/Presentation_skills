@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>限制即起點：小島秀夫的故事（使用 Presentation_skills）</title>
+<style>
+  :root {
+    /* 60-30-10 配色規格（安全亮色背景，適用會議室投影與螢幕） */
+    --bg-canvas: #F7F8FA;      /* 60%+ 主底色：極淺灰白，降低刺眼並襯托純白卡片 */
+    --bg-card: #FFFFFF;        /* 獨立卡片容器 */
+    --ink-main: #181A1F;       /* 30% 結構深炭黑：標題與主體字 */
+    --ink-muted: #5A6270;      /* 次要說明與降噪數據 */
+    --line-subtle: #E2E5EB;    /* 特徵幾何細框線 */
+    --accent-red: #E63946;     /* 10% 唯一高對比強調色：僅用於結論關鍵字、KPI 數字與目的高亮框 */
+    --accent-tint: #FDF1F2;    /* 強調色極淡遮罩 */
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Microsoft JhengHei", "Noto Sans TC", "PingFang TC", sans-serif;
+    background: #1C1F26;
+    color: var(--ink-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  .topbar {
+    width: 100%;
+    max-width: 1040px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 14px;
+    color: #CBD5E1;
+  }
+  .badge {
+    background: var(--accent-red);
+    color: #FFFFFF;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.4px;
+  }
+  .controls button {
+    background: #2B303B;
+    color: #F8FAFC;
+    border: 1px solid #475569;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-left: 6px;
+    font-size: 13px;
+  }
+  .controls button:hover { background: #3B4252; }
+
+  /* 16:9 簡報畫布 */
+  .stage {
+    width: 100%;
+    max-width: 1040px;
+    aspect-ratio: 16 / 9;
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 22px 54px rgba(0,0,0,0.45);
+    background: var(--bg-canvas);
+  }
+  .slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+    padding: 40px 52px 34px;
+    background: var(--bg-canvas);
+    position: relative;
+    flex-direction: column;
+  }
+  .slide.active { display: flex; }
+
+  /* 統一幾何特徵線：頁頂細線＋左側紅標籤 */
+  .slide-header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 22px;
+    padding-bottom: 12px;
+    border-bottom: 1.5px solid var(--line-subtle);
+  }
+  .kicker {
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    color: var(--accent-red);
+    text-transform: uppercase;
+  }
+  .action-title {
+    font-size: 25px;
+    font-weight: 800;
+    line-height: 1.3;
+    color: var(--ink-main);
+  }
+  .action-title em {
+    font-style: normal;
+    color: var(--accent-red);
+  }
+
+  /* 獨立卡片容器（雜誌浮起感，不用 Enter 堆字） */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--line-subtle);
+    border-radius: 10px;
+    padding: 20px 22px;
+    box-shadow: 0 6px 18px rgba(24, 26, 31, 0.04);
+  }
+  .card-highlight {
+    background: var(--accent-tint);
+    border: 2px solid var(--accent-red);
+    border-radius: 10px;
+    padding: 20px 22px;
+  }
+
+  /* 通用 typography：行距 1.5 倍，明確大小對比（摘要 1.5-2x 內文） */
+  .summary-lg {
+    font-size: 21px;
+    font-weight: 800;
+    color: var(--ink-main);
+    line-height: 1.35;
+  }
+  .body-text {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink-muted);
+  }
+  .kpi-num {
+    font-size: 52px;
+    font-weight: 900;
+    line-height: 1.05;
+    color: var(--accent-red);
+    letter-spacing: -1px;
+  }
+  .kpi-unit {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink-main);
+    margin-left: 4px;
+  }
+
+  /* Slide 1 封面 */
+  .cover-layout {
+    justify-content: space-between;
+    padding: 54px 64px;
+  }
+  .cover-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .red-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent-red);
+    display: inline-block;
+  }
+  .cover-main h1 {
+    font-size: 44px;
+    font-weight: 900;
+    line-height: 1.25;
+    color: var(--ink-main);
+    margin-bottom: 16px;
+  }
+  .cover-main p {
+    font-size: 19px;
+    line-height: 1.5;
+    color: var(--ink-muted);
+    max-width: 720px;
+  }
+  .cover-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1.5px solid var(--line-subtle);
+    padding-top: 16px;
+    font-size: 14px;
+    color: var(--ink-muted);
+  }
+
+  /* Grid 輔助 */
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; flex: 1; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; flex: 1; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; flex: 1; }
+
+  /* 因果推演矩陣（Slide 3） */
+  .matrix {
+    display: grid;
+    grid-template-columns: 1fr 26px 1fr 26px 1fr 26px 1.15fr;
+    align-items: stretch;
+    flex: 1;
+    gap: 0;
+  }
+  .arrow-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--accent-red);
+  }
+
+  /* 橫向雙列矩陣表格（附錄 Slide 8） */
+  table.clean-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    line-height: 1.45;
+    background: var(--bg-card);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  table.clean-table th {
+    text-align: left;
+    padding: 10px 12px;
+    background: #EEF0F4;
+    color: var(--ink-main);
+    font-weight: 800;
+    border-bottom: 2px solid var(--ink-main);
+  }
+  table.clean-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line-subtle);
+    color: var(--ink-muted);
+    vertical-align: top;
+  }
+  table.clean-table td strong { color: var(--ink-main); }
+
+  .footer-page {
+    position: absolute;
+    bottom: 12px;
+    right: 22px;
+    font-size: 12px;
+    color: var(--ink-muted);
+    font-weight: 600;
+  }
+
+  /* 雙層講者備忘面板（便利貼 + 白話口語稿） */
+  .notes-panel {
+    width: 100%;
+    max-width: 1040px;
+    background: #FFFFFF;
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin-top: 14px;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--ink-main);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  }
+  .notes-panel.hidden { display: none; }
+  .sticky-row {
+    background: #FFFBEB;
+    border-left: 4px solid #F59E0B;
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: #78350F;
+    font-size: 14px;
+  }
+  .speech-row {
+    color: #2D3748;
+  }
+  .cue {
+    display: inline-block;
+    background: var(--accent-tint);
+    color: var(--accent-red);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin: 0 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div><span class="badge">實驗組：使用 Presentation_skills 製作</span> &nbsp; <span id="counter">1 / 8</span></div>
+  <div class="controls">
+    <button onclick="prev()">← 上一頁</button>
+    <button onclick="next()">下一頁 →</button>
+    <button onclick="toggleNotes()">顯示 / 隱藏講者備忘</button>
+  </div>
+</div>
+
+<div class="stage">
+  <!-- Slide 1: 封面（極簡紅白黑＋特徵幾何線） -->
+  <section class="slide cover-layout active"
+    data-sticky="破題提問 ➔ 兩次歸零 ➔ 今日核心結論"
+    data-speech="各位好，今天我們不把小島秀夫當成流水帳年表來背。我想先問大家一個問題：如果一位創作者兩度遇上致命限制，甚至在 52 歲失去自己耕耘 29 年的一切，他憑什麼隔天重來、還能定義全新品類？<span class='cue'>停頓 1.5 秒</span> 接下來 12 分鐘，我們就從他如何把「限制」變成武器說起。">
+    <div class="cover-top">
+      <span class="red-dot"></span>
+      <span style="font-size: 14px; font-weight: 700; letter-spacing: 2px; color: var(--ink-muted);">CREATOR CASE STUDY · HIDEO KOJIMA</span>
+    </div>
+    <div class="cover-main">
+      <h1>限制即起點：<br>小島秀夫如何把每次<span style="color: var(--accent-red);">歸零</span>，變成重新定義遊戲的轉折？</h1>
+      <p>從 MSX 硬體受限到 2015 年淨身出戶——拆解他跨越 40 年產業巨變的三個創作底層邏輯</p>
+    </div>
+    <div class="cover-footer">
+      <span>核心原則：逆向轉譯限制 × 跨界電影敘事 × 重構連結</span>
+      <span>主體 7 頁 ＋ 備查附錄 1 頁（建議報告時間：12 分鐘）</span>
+    </div>
+    <div class="footer-page">1 / 8</div>
+  </section>
+
+  <!-- Slide 2: SCQA 破題頁（取代傳統目錄頁，直接帶出衝突與金字塔結論） -->
+  <section class="slide"
+    data-sticky="S 現況(30年大作) ➔ C 兩大限制與歸零 ➔ Q 如何不變時代眼淚 ➔ A 三大底層邏輯"
+    data-speech="【先聲奪人總覽】整段故事的骨幹可以收斂成四個轉折：S、C、Q、A。<span class='cue'>手勢：上手臂打開，左到右依序帶出四卡</span> 大家熟悉的 S 是他在科樂美撐起六千萬套級經典；但真正決定他高度的是 C——兩次毀滅性限制，特別是 2015 年 52 歲失去所有舊 IP。<span class='cue'>重點 25% 差別待遇</span> 換作別人可能就此隱退，但他給出的答案 A 很明確：不硬拚正面火力，而是逆向把限制寫進規則、跨界移植電影語言，最後重構人與人的連結。後面四頁我們就依序拆解這三招。">
+    <div class="slide-header">
+      <div class="kicker">01 ｜ 開場定調（SCQA 敘事骨幹）</div>
+      <div class="action-title">電影夢碎、專案被砍、被迫歸零——小島秀夫為何能<em>兩度開創全新品類</em>？</div>
+    </div>
+    <div class="grid-4">
+      <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div style="font-size:28px; font-weight:900; color:var(--ink-muted); margin-bottom:6px;">S <span style="font-size:14px; font-weight:700;">情境</span></div>
+          <div class="summary-lg" style="font-size:18px; margin-bottom:10px;">從電影夢轉進<br>遊戲業的王牌推手</div>
+          <p class="body-text">1986 年加入科樂美，領軍打造銷量 <strong>6,000 萬+ 套</strong>招牌系列。</p>
+        </div>
+        <div style="font-size:12px; color:var(--ink-muted); border-top:1px solid var(--line-subtle); padding-top:8px;">共識：頂尖單機導演</div>
+      </div>
+
+      <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div style="font-size:28px; font-weight:900; color:var(--ink-muted); margin-bottom:6px;">C <span style="font-size:14px; font-weight:700;">衝突</span></div>
+          <div class="summary-lg" style="font-size:18px; margin-bottom:10px;">兩度遭遇<br>毀滅性限制與歸零</div>
+          <p class="body-text">早年硬體打不動槍戰；2015 年與東家決裂，<strong>52 歲淨身出戶</strong>。</p>
+        </div>
+        <div style="font-size:12px; color:var(--ink-muted); border-top:1px solid var(--line-subtle); padding-top:8px;">痛點：無資源、無舊 IP</div>
+      </div>
+
+      <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div style="font-size:28px; font-weight:900; color:var(--ink-muted); margin-bottom:6px;">Q <span style="font-size:14px; font-weight:700;">疑問</span></div>
+          <div class="summary-lg" style="font-size:18px; margin-bottom:10px;">失去既有光環後，<br>如何不變時代眼淚？</div>
+          <p class="body-text">沒了資金與續作保護傘，如何從零在 3A 紅海重立門戶？</p>
+        </div>
+        <div style="font-size:12px; color:var(--ink-muted); border-top:1px solid var(--line-subtle); padding-top:8px;">核心提問：憑什麼翻身</div>
+      </div>
+
+      <div class="card-highlight" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div style="font-size:28px; font-weight:900; color:var(--accent-red); margin-bottom:6px;">A <span style="font-size:14px; font-weight:700;">核心結論</span></div>
+          <div class="summary-lg" style="font-size:18px; margin-bottom:10px;">限制當規則、<br>跨界造壁壘、重構連結</div>
+          <p class="body-text" style="color:var(--ink-main);">把短板轉成潛行玩法，用電影敘事塑品牌，再靠互助開創新品類。</p>
+        </div>
+        <div style="font-size:12px; color:var(--accent-red); font-weight:700; border-top:1px solid rgba(230,57,70,0.25); padding-top:8px;">金字塔頂端：三支柱展開</div>
+      </div>
+    </div>
+    <div class="footer-page">2 / 8</div>
+  </section>
+
+  <!-- Slide 3: 主幹一（因果推演矩陣＋右側目的高亮框） -->
+  <section class="slide"
+    data-sticky="因果鏈主線 ➔ 1987 MSX2 限制 ➔ 逆向改躲避 ➔ 右側紅框目的聚焦(6000萬套)"
+    data-speech="這張圖用四欄因果鏈看一件事：商業奇蹟往往來自妥協的逆轉。<span class='cue'>先講主線</span> 1987 年 MSX2 主機根本跑不動同畫面太多子彈與敵人，這是硬傷；小島做的不是硬塞低畫質槍戰，而是問：『既然打不過，那玩家乾脆別開槍、躲過去不就好了？』<span class='cue'>手勢：四指併攏切向最右紅框</span> 就是這個轉念，誕生了現代潛行遊戲，最後撐起超過六千萬套的龐大系列。限制沒有害死他，反而幫他避開紅海。">
+    <div class="slide-header">
+      <div class="kicker">02 ｜ 法則一：把硬體限制寫進遊戲規則</div>
+      <div class="action-title">MSX2 跑不動槍戰，反逼出<em>「躲避戰鬥」</em>的全新潛行品類</div>
+    </div>
+
+    <div class="matrix">
+      <div class="card" style="display:flex; flex-direction:column; justify-content:center;">
+        <div style="font-size:12px; font-weight:800; color:var(--ink-muted); margin-bottom:8px;">1 · 原始限制</div>
+        <div class="summary-lg" style="margin-bottom:10px;">硬體算力貧弱</div>
+        <p class="body-text">1987 MSX2 無法同屏負荷大量敵人與子彈，槍戰即當機。</p>
+      </div>
+      <div class="arrow-col">→</div>
+      <div class="card" style="display:flex; flex-direction:column; justify-content:center;">
+        <div style="font-size:12px; font-weight:800; color:var(--ink-muted); margin-bottom:8px;">2 · 逆向轉譯</div>
+        <div class="summary-lg" style="margin-bottom:10px;">把躲藏變樂趣</div>
+        <p class="body-text">將「被發現＝失敗」設為規則，少敵人反成潛入緊張感。</p>
+      </div>
+      <div class="arrow-col">→</div>
+      <div class="card" style="display:flex; flex-direction:column; justify-content:center;">
+        <div style="font-size:12px; font-weight:800; color:var(--ink-muted); margin-bottom:8px;">3 · 玩法誕生</div>
+        <div class="summary-lg" style="margin-bottom:10px;">開創潛行品類</div>
+        <p class="body-text">《Metal Gear》首創視線錐、警報與紙箱掩護機制。</p>
+      </div>
+      <div class="arrow-col">→</div>
+      <div class="card-highlight" style="display:flex; flex-direction:column; justify-content:center;">
+        <div style="font-size:12px; font-weight:800; color:var(--accent-red); margin-bottom:8px;">結果 · 目的焦點</div>
+        <div class="kpi-num">6,000<span class="kpi-unit">萬+ 套</span></div>
+        <p class="body-text" style="color:var(--ink-main); margin-top:12px;">《潛龍諜影》系列驗證：<strong>限制是差異化起點</strong>。</p>
+      </div>
+    </div>
+    <div class="footer-page">3 / 8</div>
+  </section>
+
+  <!-- Slide 4: 主幹二（抽離狀況引導摘要放大 2 倍＋細節配強調色粗體，拒絕恐嚇信與文字牆） -->
+  <section class="slide"
+    data-sticky="兩條路選跨界 ➔ 1988 練敘事 ➔ 1998 3D即時運鏡 ➔ 2014 P.T.極簡控場"
+    data-speech="光靠單一玩法很容易被抄走，他的第二道護城河是「把電影語言整套搬進互動體驗」。<span class='cue'>先聲奪人</span> 畫面上這三個階段，分別代表敘事練兵、3D 破圈，跟極簡顛覆。<span class='cue'>差別待遇：聚焦 1998 與 2014</span> 當年 1998 年 PS1 時代別人還在用預錄動畫墊檔，小島堅持全部用遊戲引擎即時演繹運鏡，還讓角色直接跟手把玩家對話；到了 2014 年《P.T.》，只用一條迴圈走廊就嚇壞全球玩家，這證明他真正厲害的是精準控制觀眾情緒的節奏。">
+    <div class="slide-header">
+      <div class="kicker">03 ｜ 法則二：跨界移植電影語言（三階段演進）</div>
+      <div class="action-title">不做「過場播片」的替代品，他讓遊戲畫面成為<em>作者級敘事</em></div>
+    </div>
+
+    <div class="grid-3">
+      <!-- 卡 1 -->
+      <div class="card" style="display:flex; flex-direction:column; gap:14px;">
+        <div style="border-bottom:1.5px solid var(--line-subtle); padding-bottom:12px;">
+          <div style="font-size:12px; font-weight:700; color:var(--ink-muted); margin-bottom:4px;">1988 – 1994 ｜ 敘事練兵</div>
+          <div class="summary-lg">文字冒險驗證<br>電影分鏡節奏</div>
+        </div>
+        <p class="body-text">《Snatcher》《Policenauts》導入長劇本，確立<strong>「A Hideo Kojima Game」</strong>作者識別。</p>
+        <div style="margin-top:auto; font-size:12.5px; font-weight:700; color:var(--ink-main); background:#F1F3F7; padding:8px 10px; border-radius:6px;">
+          積累：劇本先行的研發流程
+        </div>
+      </div>
+
+      <!-- 卡 2 -->
+      <div class="card" style="display:flex; flex-direction:column; gap:14px;">
+        <div style="border-bottom:1.5px solid var(--line-subtle); padding-bottom:12px;">
+          <div style="font-size:12px; font-weight:700; color:var(--ink-muted); margin-bottom:4px;">1998 ｜ PS1 破圈</div>
+          <div class="summary-lg">即時 3D 運鏡<br>打破第四面牆</div>
+        </div>
+        <p class="body-text">《MGS1》全採<span style="color:var(--accent-red); font-weight:700;">即時演算運鏡與配音</span>；Boss 甚至讀取玩家記憶卡、要求換手把插槽。</p>
+        <div style="margin-top:auto; font-size:12.5px; font-weight:700; color:var(--ink-main); background:#F1F3F7; padding:8px 10px; border-radius:6px;">
+          躍升：奠定世界級導演地位
+        </div>
+      </div>
+
+      <!-- 卡 3 -->
+      <div class="card-highlight" style="display:flex; flex-direction:column; gap:14px;">
+        <div style="border-bottom:1.5px solid rgba(230,57,70,0.25); padding-bottom:12px;">
+          <div style="font-size:12px; font-weight:700; color:var(--accent-red); margin-bottom:4px;">2014 ｜ 極簡巔峰</div>
+          <div class="summary-lg">只靠一條走廊，<br>寫下《P.T.》傳奇</div>
+        </div>
+        <p class="body-text" style="color:var(--ink-main);">僅靠單一迴圈走廊與音效節奏，定義心理恐怖新標竿——<strong>少即是多</strong>。</p>
+        <div style="margin-top:auto; font-size:12.5px; font-weight:700; color:var(--accent-red); background:#FFFFFF; padding:8px 10px; border-radius:6px; border:1px solid rgba(230,57,70,0.3);">
+          即使專案被砍，品牌信任已深植人心
+        </div>
+      </div>
+    </div>
+    <div class="footer-page">4 / 8</div>
+  </section>
+
+  <!-- Slide 5: 主幹三（互補品數字衝擊＋雙欄對比「危機 vs 歸零破局」） -->
+  <section class="slide"
+    data-sticky="三個數字(29年/0版權/1天重啟) ➔ 衝突原因 ➔ 隔天三步棋"
+    data-speech="但再高的聲望，也躲不過組織利益分歧。<span class='cue'>停頓 1 秒</span> 請看上面這三個數字：29 年年資、0 個帶得走的舊版權，卻只花了 1 天就重新開張。這就是 2015 年底發生的真實劇本。<span class='cue'>左到右對照</span> 左邊是所有人看到的風暴——手遊化策略衝突、名字被撤、連 TGA 領獎都被法務擋下。但右邊才是我們該學的：52 歲失去一切，他隔天 12 月 16 日立刻重組獨立的小島工作室，當天簽下索尼資源支持，接著全球找引擎借力，沒花時間抱怨，直接進入下一個賽道。">
+    <div class="slide-header">
+      <div class="kicker">04 ｜ 轉折時刻：2015 年的世紀決裂與 24 小時重啟</div>
+      <div class="action-title">失去了 29 年積累與全部 IP，他在離開<em>隔天</em>重新立起旗幟</div>
+    </div>
+
+    <!-- 上方 KPI 互補衝擊列 -->
+    <div class="grid-3" style="flex: 0 0 auto; margin-bottom: 16px;">
+      <div class="card" style="padding:14px 20px; display:flex; align-items:baseline; gap:12px;">
+        <span class="kpi-num" style="font-size:40px; color:var(--ink-main);">29<span class="kpi-unit">年</span></span>
+        <span class="body-text">1986–2015 科樂美生涯畫下句點</span>
+      </div>
+      <div class="card" style="padding:14px 20px; display:flex; align-items:baseline; gap:12px;">
+        <span class="kpi-num" style="font-size:40px; color:var(--ink-main);">0<span class="kpi-unit">項 IP</span></span>
+        <span class="body-text">《潛龍諜影》《Silent Hills》全數留給前東家</span>
+      </div>
+      <div class="card-highlight" style="padding:14px 20px; display:flex; align-items:baseline; gap:12px;">
+        <span class="kpi-num" style="font-size:40px;">1<span class="kpi-unit">天</span></span>
+        <span class="body-text" style="color:var(--ink-main); font-weight:700;">12/15 離職 ➔ 12/16 創立獨立新公司</span>
+      </div>
+    </div>
+
+    <!-- 下方雙欄對比 -->
+    <div class="grid-2">
+      <div class="card">
+        <div style="font-size:13px; font-weight:800; color:var(--ink-muted); margin-bottom:10px;">BEFORE ｜ 2015 年體制衝擊</div>
+        <div class="summary-lg" style="font-size:18px; margin-bottom:12px;">當追求 3A 美學遇上集團手遊轉型</div>
+        <div class="body-text" style="margin-bottom:8px;"><strong>【署名撤除】</strong>3 月起移除宣傳物上的小島個人署名</div>
+        <div class="body-text" style="margin-bottom:8px;"><strong>【計畫腰斬】</strong>《Silent Hills》取消，《P.T.》全面下架</div>
+        <div class="body-text"><strong>【領獎受阻】</strong>12 月 TGA 遭前東家法務禁止出席領獎</div>
+      </div>
+      <div class="card" style="border-left: 5px solid var(--accent-red);">
+        <div style="font-size:13px; font-weight:800; color:var(--accent-red); margin-bottom:10px;">AFTER ｜ 歸零後的三步破局</div>
+        <div class="summary-lg" style="font-size:18px; margin-bottom:12px;">不從零寫引擎，借力加速出作品</div>
+        <div class="body-text" style="color:var(--ink-main); margin-bottom:8px;"><strong>【班底集結】</strong>多年累積的個人品牌讓核心戰友選擇跟隨</div>
+        <div class="body-text" style="color:var(--ink-main); margin-bottom:8px;"><strong>【結盟索尼】</strong>獨立當天簽訂發行與資金支援，穩住開發節奏</div>
+        <div class="body-text" style="color:var(--ink-main);"><strong>【跨廠借力】</strong>採用 Guerrilla 現成 Decima 引擎加速落地</div>
+      </div>
+    </div>
+    <div class="footer-page">5 / 8</div>
+  </section>
+
+  <!-- Slide 6: 主幹四（雜誌留白卡片風格＋互補品大數字） -->
+  <section class="slide"
+    data-sticky="2800萬+玩家 ➔ From Sapiens to Ludens ➔ 棒子換成繩索"
+    data-speech="2019 年《死亡擱淺》剛公開時，很多玩家傻眼：『這難道只是模擬送外賣嗎？』<span class='cue'>手勢：指向左側大數字與金句</span> 但請看今天的結果：超過兩千八百萬名玩家踏進這個孤獨的世界。為什麼？因為就像右邊三張卡片寫的，當時市場滿街都是拿槍互射的「棒子」遊戲，小島卻引用安部公房小說的概念，做了一個只用「繩索」連結人的遊戲。你走過雪山踩出的腳印、別人幫你蓋的避雨亭和梯子，看不到對方卻感受得到善意。他再一次在沒人看好的角落，開出全新的社群體驗。">
+    <div class="slide-header">
+      <div class="kicker">05 ｜ 法則三：以「連結」開創新品類（《死亡擱淺》）</div>
+      <div class="action-title">把射擊主流的「棒子」換成<em>「繩索」</em>：孤獨送貨實驗吸引 2,800 萬名玩家</div>
+    </div>
+
+    <div class="grid-2" style="grid-template-columns: 0.95fr 1.25fr;">
+      <!-- 左側：哲學宣言＋巨幅數據 -->
+      <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; background:#181A1F; color:#FFFFFF; border:none;">
+        <div>
+          <div style="font-size:12px; letter-spacing:1.5px; color:var(--accent-red); font-weight:800; margin-bottom:10px;">STUDIO MOTTO</div>
+          <div style="font-size:28px; font-weight:900; line-height:1.25; margin-bottom:10px;">From Sapiens<br>to <span style="color:var(--accent-red);">Ludens</span></div>
+          <p style="font-size:14px; line-height:1.55; color:#CBD5E1;">從「智人」進化為「遊戲人」——<br>玩樂與想像力，是人類開創未來的起點。</p>
+        </div>
+        <div style="border-top:1px solid #334155; padding-top:16px;">
+          <div class="kpi-num" style="font-size:54px;">2,800<span class="kpi-unit" style="color:#FFFFFF;">萬+</span></div>
+          <div style="font-size:13.5px; color:#94A3B8; margin-top:4px;">《死亡擱淺》系列全球累計玩家數（截至七週年跨平台統計）</div>
+        </div>
+      </div>
+
+      <!-- 右側：三張獨立卡片（無條列點、關鍵字聚焦） -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="card" style="padding:16px 20px;">
+          <div style="font-size:12px; font-weight:800; color:var(--accent-red); margin-bottom:4px;">01 · 機制反轉</div>
+          <div class="summary-lg" style="font-size:17px; margin-bottom:4px;">把「地形與送貨」變成核心玩法</div>
+          <p class="body-text">不比槍法，比負重平衡與路線克服；把移動本身變成戰場。</p>
+        </div>
+        <div class="card" style="padding:16px 20px;">
+          <div style="font-size:12px; font-weight:800; color:var(--accent-red); margin-bottom:4px;">02 · 社會繩索</div>
+          <div class="summary-lg" style="font-size:17px; margin-bottom:4px;">非同步互助：不見面卻共享橋樑</div>
+          <p class="body-text">玩家留下的梯子、公路與按讚，把孤獨轉化為正向連結。</p>
+        </div>
+        <div class="card" style="padding:16px 20px;">
+          <div style="font-size:12px; font-weight:800; color:var(--accent-red); margin-bottom:4px;">03 · 多元擴張</div>
+          <div class="summary-lg" style="font-size:17px; margin-bottom:4px;">單機續作走向跨界影視實驗</div>
+          <p class="body-text">2025 年《死亡擱淺 2》＋《OD》《Physint》及電影改編計畫。</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-page">6 / 8</div>
+  </section>
+
+  <!-- Slide 7: 金字塔總結（3 大獨立行動原則，有具體收斂與行動啟發） -->
+  <section class="slide"
+    data-sticky="結語收斂 ➔ 三個可遷移原則(借限/跨界/歸零) ➔ 留給觀眾的一句提問"
+    data-speech="回到一開頭問的問題：小島秀夫憑什麼每次歸零還能開創新局？總結起來就是畫面上這三個每個人都能帶走的原則：<span class='cue'>手勢：手掌下切切分三點</span> 第一、借限破局——下次資源或工具不夠時，試著把限制直接寫成遊戲規則；第二、跨界移植——不要只在同業裡內捲，跨領域的語彙才是你的護城河；第三、緊抓品味——IP 與平台會過期，只有你的核心團隊與不可取代的審美帶得走。<span class='cue'>停頓 1.5 秒</span> 謝謝大家，如果想核對詳細年份或數據，歡迎參考下一頁附錄，也歡迎現場提問！">
+    <div class="slide-header">
+      <div class="kicker">06 ｜ 總結與啟發（金字塔核心收斂）</div>
+      <div class="action-title">小島秀夫留給所有創作者的<em>三個破局原則</em></div>
+    </div>
+
+    <div class="card-highlight" style="flex: 0 0 auto; padding:16px 22px; margin-bottom:18px; text-align:center;">
+      <span style="font-size:18px; font-weight:800; color:var(--ink-main);">核心結論：真正的作者能力，不在於擁有多少資源，而在於<span style="color:var(--accent-red);">將限制轉化為定義新規則的勇氣</span></span>
+    </div>
+
+    <div class="grid-3">
+      <div class="card" style="display:flex; flex-direction:column; gap:10px;">
+        <div style="font-size:13px; font-weight:800; color:var(--accent-red);">原則 01</div>
+        <div class="summary-lg" style="font-size:22px;">【借限破局】</div>
+        <p class="body-text" style="color:var(--ink-main); font-weight:600;">把環境短板寫成核心賣點</p>
+        <p class="body-text">MSX2 算力不足催生潛行遊戲；《P.T.》一條走廊創造最強恐怖。別等資源滿了才動手。</p>
+      </div>
+      <div class="card" style="display:flex; flex-direction:column; gap:10px;">
+        <div style="font-size:13px; font-weight:800; color:var(--accent-red);">原則 02</div>
+        <div class="summary-lg" style="font-size:22px;">【跨界移植】</div>
+        <p class="body-text" style="color:var(--ink-main); font-weight:600;">向本業之外借用成熟語彙</p>
+        <p class="body-text">把電影運鏡、文學隱喻與好萊塢表演引入遊戲，建立別人模仿不來的複合體驗。</p>
+      </div>
+      <div class="card" style="display:flex; flex-direction:column; gap:10px;">
+        <div style="font-size:13px; font-weight:800; color:var(--accent-red);">原則 03</div>
+        <div class="summary-lg" style="font-size:22px;">【品味帶走】</div>
+        <p class="body-text" style="color:var(--ink-main); font-weight:600;">不戀棧既有光環、敢於重啟</p>
+        <p class="body-text">IP 會留在體制裡，但個人信任與核心團隊帶得走——52 歲歸零隔天一樣能重新開局。</p>
+      </div>
+    </div>
+    <div class="footer-page">7 / 8</div>
+  </section>
+
+  <!-- Slide 8: Appendix 附錄（落實「支撐細節移至附錄」原則，主體不塞密集表格） -->
+  <section class="slide"
+    data-sticky="附錄備查頁 ➔ Q&A 時依問題快速調閱年份與數字"
+    data-speech="（本頁為 Q&A 備查附錄頁）如果在問答時間有聽眾想確認特定年份、作品或玩家數字來源，可直接切到這一頁對照說明。">
+    <div class="slide-header">
+      <div class="kicker">APPENDIX ｜ 備查附錄（不佔用主體報告時間）</div>
+      <div class="action-title">小島秀夫 40 年關鍵里程碑與公開數據備查表</div>
+    </div>
+    <table class="clean-table">
+      <thead>
+        <tr>
+          <th style="width:16%;">時期</th>
+          <th style="width:24%;">關鍵事件 / 作品</th>
+          <th style="width:40%;">對創作歷程的結構性意義</th>
+          <th style="width:20%;">關鍵公開指標</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1963–1986</strong><br>電影夢與入行</td>
+          <td>生於東京，大學接觸紅白機後加入科樂美</td>
+          <td>將電影分鏡與文學思維帶入早期 MSX 企劃團隊</td>
+          <td>1986 年入職科樂美</td>
+        </tr>
+        <tr>
+          <td><strong>1987–2014</strong><br>開創類型與巔峰</td>
+          <td>《Metal Gear》→《MGS 1–4》→《P.T.》</td>
+          <td>硬體受限逼出潛行玩法；2005 設內部工作室、2011 升副總裁</td>
+          <td>《Metal Gear》系列<br><strong>6,000 萬+ 套</strong></td>
+        </tr>
+        <tr>
+          <td><strong>2015</strong><br>世紀決裂與重啟</td>
+          <td>《MGSV》署名移除、Silent Hills 取消、TGA 禁令</td>
+          <td>12/15 結束 29 年賓主關係；12/16 隔天成立獨立小島工作室</td>
+          <td><strong>24 小時內</strong>簽約索尼重啟</td>
+        </tr>
+        <tr>
+          <td><strong>2019–至今</strong><br>連結哲學與跨界</td>
+          <td>《死亡擱淺 1 &amp; 2》、OD、Physint、影視合作</td>
+          <td>採用 Decima 引擎與「社會繩索」機制，推動「From Sapiens to Ludens」</td>
+          <td>《死亡擱淺》系列<br><strong>2,800 萬+ 名玩家</strong></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:14px; font-size:12.5px; color:var(--ink-muted);">
+      說明：主體故事線已於 Slide 1–7 完成（約 12 分鐘）；本附錄遵循「支撐細節移至 Appendix」原則，供會後延伸閱讀與 Q&amp;A 查證使用。
+    </div>
+    <div class="footer-page">8 / 8</div>
+  </section>
+</div>
+
+<div class="notes-panel" id="notesBox">
+  <div class="sticky-row">📌 關鍵字便利貼：<span id="stickyContent"></span></div>
+  <div class="speech-row">🎙️ <strong>白話口語講稿</strong>：<span id="speechContent"></span></div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('counter');
+  const stickyContent = document.getElementById('stickyContent');
+  const speechContent = document.getElementById('speechContent');
+  const notesBox = document.getElementById('notesBox');
+  let idx = 0;
+
+  function render() {
+    slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+    counter.textContent = `${idx + 1} / ${slides.length}`;
+    stickyContent.textContent = slides[idx].getAttribute('data-sticky') || '';
+    speechContent.innerHTML = slides[idx].getAttribute('data-speech') || '';
+  }
+  function next() { idx = (idx + 1) % slides.length; render(); }
+  function prev() { idx = (idx - 1 + slides.length) % slides.length; render(); }
+  function toggleNotes() { notesBox.classList.toggle('hidden'); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') next();
+    if (e.key === 'ArrowLeft') prev();
+  });
+  render();
+</script>
+</body>
+</html>

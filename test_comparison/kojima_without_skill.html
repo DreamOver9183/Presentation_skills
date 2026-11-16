@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>遊戲製作人小島秀夫的故事（無 Skill 對照組）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+    background: #121420;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  .topbar {
+    width: 100%;
+    max-width: 1040px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 14px;
+    color: #94a3b8;
+  }
+  .badge {
+    background: #334155;
+    color: #cbd5e1;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+  }
+  .controls button {
+    background: #2d3748;
+    color: #f8fafc;
+    border: 1px solid #475569;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-left: 6px;
+    font-size: 13px;
+  }
+  .controls button:hover { background: #3b475e; }
+  .stage {
+    width: 100%;
+    max-width: 1040px;
+    aspect-ratio: 16 / 9;
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.55);
+  }
+  .slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+    padding: 44px 54px;
+    background: linear-gradient(135deg, #1b2240 0%, #2a1f4d 55%, #16213e 100%);
+    position: relative;
+    overflow: hidden;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .slide.active { display: flex; }
+  .slide::after {
+    content: "";
+    position: absolute;
+    right: -80px;
+    bottom: -80px;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(99,102,241,0.22), transparent 70%);
+    pointer-events: none;
+  }
+  .slide-cover {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(135deg, #0f172a 0%, #312e81 60%, #1e1b4b 100%);
+  }
+  .slide-cover h1 {
+    font-size: 46px;
+    color: #ffffff;
+    margin-bottom: 18px;
+    text-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .slide-cover p {
+    font-size: 21px;
+    color: #c7d2fe;
+    margin-bottom: 28px;
+  }
+  .slide-cover .meta {
+    font-size: 15px;
+    color: #94a3b8;
+  }
+  h2.slide-title {
+    font-size: 30px;
+    color: #93c5fd;
+    border-bottom: 2px solid #4f46e5;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+  }
+  ul.classic-bullets {
+    list-style: disc;
+    padding-left: 26px;
+    font-size: 16.5px;
+    line-height: 1.45;
+    color: #e2e8f0;
+  }
+  ul.classic-bullets li {
+    margin-bottom: 10px;
+  }
+  ul.classic-bullets li strong {
+    color: #fde047;
+  }
+  .highlight-red { color: #f87171; font-weight: bold; text-decoration: underline; }
+  .highlight-cyan { color: #38bdf8; font-weight: bold; }
+  .toc-list {
+    list-style: none;
+    font-size: 21px;
+    line-height: 2.1;
+    margin-top: 12px;
+    padding-left: 16px;
+  }
+  .toc-list li {
+    border-left: 4px solid #6366f1;
+    padding-left: 16px;
+    margin-bottom: 12px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 0 6px 6px 0;
+  }
+  table.dense-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.35;
+    margin-top: 6px;
+    background: rgba(15, 23, 42, 0.55);
+  }
+  table.dense-table th, table.dense-table td {
+    border: 1px solid #475569;
+    padding: 8px 10px;
+    text-align: left;
+  }
+  table.dense-table th {
+    background: #3730a3;
+    color: #ffffff;
+  }
+  .footer-num {
+    position: absolute;
+    bottom: 14px;
+    right: 24px;
+    font-size: 13px;
+    color: #94a3b8;
+  }
+  .notes-panel {
+    width: 100%;
+    max-width: 1040px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 14px;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: #cbd5e1;
+  }
+  .notes-panel h3 {
+    font-size: 14px;
+    color: #93c5fd;
+    margin-bottom: 6px;
+  }
+  .notes-panel.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div><span class="badge">對照組：未使用任何 Skill / 無方法論套用</span> &nbsp; <span id="counter">1 / 8</span></div>
+  <div class="controls">
+    <button onclick="prev()">← 上一頁</button>
+    <button onclick="next()">下一頁 →</button>
+    <button onclick="toggleNotes()">顯示 / 隱藏講者備忘</button>
+  </div>
+</div>
+
+<div class="stage">
+  <!-- Slide 1 -->
+  <section class="slide slide-cover active" data-notes="大家好，今天要跟大家分享的主題是「遊戲製作人小島秀夫的故事」。小島秀夫是日本當代非常著名的遊戲創作者，代表作包括《潛龍諜影》系列和《死亡擱淺》。接下來我們會按照時間順序，從他的早年經歷一路介紹到他在科樂美的時期、後來的獨立創業，以及他的創作哲學。">
+    <h1>遊戲製作人小島秀夫的故事</h1>
+    <p>從電影夢想少年到世界級遊戲大師的創作之路</p>
+    <div class="meta">遊戲產業人物專題報告</div>
+    <div class="footer-num">1 / 8</div>
+  </section>
+
+  <!-- Slide 2 -->
+  <section class="slide" data-notes="這是今天簡報的大綱目錄，總共分為五個主要部分。第一部分會介紹小島秀夫的早年背景與他最初的電影夢想；第二部分會講他在科樂美時期如何打造出經典的潛龍諜影系列；第三部分是 2015 年他與科樂美分道揚鑣的過程；第四部分介紹他獨立創立小島工作室並推出死亡擱淺；最後第五部分會整理他的作品年表以及對遊戲產業的總結與影響。">
+    <h2 class="slide-title">簡報大綱（Table of Contents）</h2>
+    <ul class="toc-list">
+      <li>1. 早年經歷與進入遊戲業（1963–1986）</li>
+      <li>2. 科樂美黃金時期與《潛龍諜影》系列（1987–2014）</li>
+      <li>3. 與科樂美的衝突及世紀決裂（2015）</li>
+      <li>4. 獨立創業與《死亡擱淺》（2015–至今）</li>
+      <li>5. 代表作品總覽、創作哲學與結語</li>
+    </ul>
+    <div class="footer-num">2 / 8</div>
+  </section>
+
+  <!-- Slide 3 -->
+  <section class="slide" data-notes="首先我們來看第一部分，小島秀夫的早年經歷。他在 1963 年 8 月 24 日出生於日本東京都世田谷區，童年時期因為父親工作的關係常常搬家，這段經歷也影響了他後來作品中對孤獨和連結的描寫。他受父親影響非常喜歡看電影和讀小說，原本的夢想是成為一名電影導演。不過後來因為父親過世等家庭因素，他轉而就讀一般大學的經濟學系。在大三的時候他接觸到了大型電玩和任天堂紅白機，發現電子遊戲其實也能夠成為一種講故事的互動媒介，於是在 1986 年決定不走傳統電影路，正式加入日本遊戲公司科樂美，進入神戶分社的 MSX 部門擔任企劃人員。">
+    <h2 class="slide-title">一、早年經歷與進入遊戲業（1963–1986）</h2>
+    <ul class="classic-bullets">
+      <li><strong>出生與成長背景</strong>：1963 年 8 月 24 日出生於日本東京都世田谷區，童年因父親工作多次搬遷至關西各地，養成獨處與閱讀的習慣。</li>
+      <li><strong>電影與文學啟蒙</strong>：受喜愛電影的父親影響，從小大量觀看電影並閱讀懸疑、科幻小說，青少年時期立志成為<span class="highlight-cyan">電影導演或小說家</span>。</li>
+      <li><strong>人生轉折點</strong>：因父親離世等家庭因素放棄直接進入電影界，大學就讀經濟學系，但在大三接觸任天堂紅白機與街機後，深受遊戲互動敘事的潛力吸引。</li>
+      <li><strong>加入科樂美（Konami）</strong>：儘管周遭親友與同學多選擇金融或一般大企業，小島秀夫於 <span class="highlight-red">1986 年</span> 毅然加入科樂美，在神戶分社 MSX 電腦部門擔任遊戲企劃。</li>
+      <li><strong>初期的挫折感</strong>：剛進入公司時對程式編寫不熟悉，在團隊中曾感到格格不入，但他堅持結合電影分鏡思維來設計遊戲企劃案。</li>
+    </ul>
+    <div class="footer-num">3 / 8</div>
+  </section>
+
+  <!-- Slide 4 -->
+  <section class="slide" data-notes="接下來我們來看小島秀夫在科樂美的黃金時期。這頁列出了幾個重要作品節點。1987 年他在 MSX2 平台推出首部主導作品《Metal Gear》，當時原本要做軍事動作遊戲，但硬體無法支援同畫面太多敵人與子彈，於是他改採躲避與潛入的方式，意外開創了潛行遊戲類型。1988 年與 1994 年他又推出了《Snatcher》和《Policenauts》兩款科幻冒險遊戲，展現極強的電影風格。1998 年 PlayStation 平台的《Metal Gear Solid》是大爆發的時刻，用全 3D 即時運算和全程語音震撼全球。之後從 2001 到 2008 年陸續推出 2、3、4 代，並在 2005 年成立科樂美旗下的小島工作室，2011 年更升任科樂美數位娛樂副總裁。到了 2014 年他製作了恐怖遊戲《P.T.》，作為《Silent Hills》的預告試玩，大受好評。">
+    <h2 class="slide-title">二、科樂美黃金時期：《潛龍諜影》的誕生與崛起</h2>
+    <ul class="classic-bullets">
+      <li><strong>1987 年《Metal Gear》問世</strong>：於 MSX2 推出，因硬體性能限制無法處理大量槍戰畫面，遂改以「迴避敵人視線、潛入滲透」為核心玩法，奠定現代<span class="highlight-cyan">潛行類遊戲（Stealth Game）</span>基石。</li>
+      <li><strong>1988–1994 年冒險遊戲探索</strong>：相繼執導《Snatcher》（1988）與《Policenauts》（1994），以賽博龐克與硬派科幻劇情展現濃厚的電影運鏡風格。</li>
+      <li><strong>1998 年《Metal Gear Solid》全球爆紅</strong>：登上 PlayStation 平台，結合 3D 即時多邊形演出、電影式分鏡與打破第四面牆的創意設計，正式確立國際級大師地位。</li>
+      <li><strong>2001–2008 年經典三部曲延續</strong>：推出《MGS2：自由之子》、《MGS3：食蛇者》與《MGS4：愛國者之槍》，《Metal Gear》系列全球累積銷量突破 6,000 萬套。</li>
+      <li><strong>2005–2011 年公司內部地位攀升</strong>：於 2005 年在科樂美內部成立專屬的「小島工作室」（Kojima Productions），並於 2011 年升任科樂美數位娛樂副總裁。</li>
+      <li><strong>2014 年《P.T.》驚豔遊戲界</strong>：與導演吉勒摩·戴托羅及演員諾曼·李杜斯合作，發表《Silent Hills》互動預告《P.T.》，被公認為恐怖遊戲史上的傳奇體驗。</li>
+    </ul>
+    <div class="footer-num">4 / 8</div>
+  </section>
+
+  <!-- Slide 5 -->
+  <section class="slide" data-notes="然而好景不常，2015 年發生了震驚整個遊戲業界的世紀決裂事件。隨著科樂美公司高層調整經營方向，決定將重心從高預算的單機主機大作轉移到投資報酬率較高的手機遊戲上，雙方的創作理念產生嚴重分歧。從 2015 年 3 月開始，科樂美在《潛龍諜影 V：幻痛》的官網和宣傳海報上陸續移除了小島秀夫以及小島工作室的名字。接著原本備受期待的《Silent Hills》計畫遭到正式取消，外部報導也指出小島團隊在最後開發階段受到嚴格的通訊與行動限制。同年 9 月《幻痛》正式發售並獲得極高評價，但 12 月在 TGA 遊戲大獎頒獎典禮上，主持人卻公開宣布科樂美的法務禁止小島秀夫親自出席領獎，最終小島秀夫在 2015 年 12 月 15 日正式離職，結束長達 29 年的科樂美生涯。">
+    <h2 class="slide-title">三、世紀決裂：2015 年與科樂美的衝突與離職</h2>
+    <ul class="classic-bullets">
+      <li><strong>企業策略分歧</strong>：科樂美高層決定將集團重心轉向成本較低、利潤較高的手機遊戲與娛樂事業，與小島追求高預算 AAA 主機大作的理念產生根本衝突。</li>
+      <li><strong>作品署名遭到移除（2015 年 3 月）</strong>：在《潛龍諜影 V：幻痛》上市前夕，科樂美撤除宣傳物上的「A Hideo Kojima Game」與小島工作室標誌。</li>
+      <li><strong>《Silent Hills》慘遭取消</strong>：與知名導演及演員合作的恐怖大作計畫被迫中止，試玩版《P.T.》也從線上商店下架，引發全球玩家惋惜。</li>
+      <li><strong>《幻痛》謝幕與 TGA 禁令（2015 年 9–12 月）</strong>：《MGSV：幻痛》發售後大獲好評，但在同年 12 月 TGA 遊戲大獎頒獎典禮上，科樂美法務禁止小島秀夫出席領獎。</li>
+      <li><strong>結束 29 年賓主關係</strong>：2015 年 12 月 15 日，小島秀夫正式離開科樂美，也失去了自己深耕近三十年的《潛龍諜影》IP 版權。</li>
+    </ul>
+    <div class="footer-num">5 / 8</div>
+  </section>
+
+  <!-- Slide 6 -->
+  <section class="slide" data-notes="不過小島秀夫並沒有停下腳步，就在他離開科樂美的隔天，也就是 2015 年 12 月 16 日，他立刻宣布成立全新的獨立遊戲公司「株式會社小島工作室」，並與索尼互動娛樂達成合作協議。他走訪世界各地尋找開發技術，最後選用 Guerrilla Games 的 Decima 引擎，並邀請多位好萊塢影星參與演出與動作捕捉。到了 2019 年 11 月 8 日，他獨立後的第一款全新原創作品《死亡擱淺》正式發售。這款遊戲大膽主打送貨和重建連結，還有獨特的非同步多人社會繩索系統，一開始評價兩極，但後來隨著時代背景與深度體驗獲得極高口碑，包含後續版本與續作在內，玩家總數已突破 2,800 萬人。現在他也持續開發《死亡擱淺 2》以及《OD》、《Physint》等新計畫，並拓展影視改編合作。">
+    <h2 class="slide-title">四、獨立重生：創立小島工作室與《死亡擱淺》</h2>
+    <ul class="classic-bullets">
+      <li><strong>火速重新出發（2015 年 12 月 16 日）</strong>：離職隔天即宣布重組獨立的「小島工作室」（Kojima Productions），並攜手索尼互動娛樂（SIE）開發全新 PS4 獨佔新作。</li>
+      <li><strong>核心理念「From Sapiens to Ludens」</strong>：以「遊戲人（Homo Ludens）」為工作室象徵，主張人類透過玩樂與想像力推動文明與創作進步。</li>
+      <li><strong>《死亡擱淺》的誕生（2019 年 11 月 8 日）</strong>：採用 Decima 引擎並集結諾曼·李杜斯等好萊塢演員，打造以「送貨」與「重建連結」為核心的嶄新遊戲體驗。</li>
+      <li><strong>社會繩索系統與市場成績</strong>：首創非同步互助機制，玩家看不到彼此卻能留下梯子、道路與按讚鼓勵；系列累計已吸引超過 <span class="highlight-cyan">2,800 萬名玩家</span>。</li>
+      <li><strong>多元跨界版圖</strong>：近年持續推出《死亡擱淺 2：冥灘之上》（2025），同時與微軟合作《OD》、回歸諜報題材新作《Physint》，並籌備電影與影視改編。</li>
+    </ul>
+    <div class="footer-num">6 / 8</div>
+  </section>
+
+  <!-- Slide 7 -->
+  <section class="slide" data-notes="這張投影片整理了小島秀夫從 1987 年到現在的重要作品數據一覽表，以及他的三大創作哲學。大家可以看到表格中有不同時期、代表作品、開發單位、核心設計創新和相關的里程碑數據。總結來說，他的成功來自於對電影敘事的熱愛、不畏懼挑戰遊戲規則的反骨精神，以及總是思考如何用遊戲機制傳達社會與哲學議題。">
+    <h2 class="slide-title">五、代表作品總覽與創作哲學</h2>
+    <table class="dense-table">
+      <thead>
+        <tr>
+          <th>時期 / 年份</th>
+          <th>代表作品</th>
+          <th>發行體制</th>
+          <th>核心玩法與敘事創新</th>
+          <th>歷史意義 / 成績</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1987</td><td>Metal Gear（MSX2）</td><td>科樂美內部</td><td>躲避衝突的潛行滲透機制</td><td>開創現代潛行類遊戲</td></tr>
+        <tr><td>1988–1994</td><td>Snatcher / Policenauts</td><td>科樂美內部</td><td>硬派科幻劇情與電影式分鏡</td><td>建立作者型敘事風格</td></tr>
+        <tr><td>1998–2015</td><td>Metal Gear Solid 1–5</td><td>科樂美 / 內部工作室</td><td>3D 即時演出、反戰政治哲學、開放世界</td><td>全系列全球銷量逾 6,000 萬套</td></tr>
+        <tr><td>2014</td><td>P.T.（Silent Hills 預告）</td><td>科樂美內部</td><td>第一人稱無盡走廊心理恐怖解謎</td><td>雖取消仍深遠影響獨立恐怖遊戲</td></tr>
+        <tr><td>2019–2025</td><td>Death Stranding 1 &amp; 2</td><td>獨立小島工作室</td><td>負重送貨地形克服、非同步社會繩索系統</td><td>系列玩家突破 2,800 萬人、獲金氏紀錄</td></tr>
+      </tbody>
+    </table>
+    <ul class="classic-bullets" style="margin-top: 14px; font-size: 15px;">
+      <li><strong>作者電影美學</strong>：大量運用長鏡頭、配樂、演員表演與現實政治隱喻，打破遊戲與電影界線。</li>
+      <li><strong>非傳統遊戲機制</strong>：從「不開槍的動作遊戲」到「以送貨為主軸的開放世界」，持續挑戰商業主流想像。</li>
+    </ul>
+    <div class="footer-num">7 / 8</div>
+  </section>
+
+  <!-- Slide 8 -->
+  <section class="slide slide-cover" data-notes="總結來說，小島秀夫的故事告訴我們，真正的創作者即使面臨硬體限制或是商業環境的劇烈變動，只要保有對作品的熱情與獨特的創作願景，就能不斷開創出屬於自己的道路。以上就是今天關於小島秀夫的簡報分享，謝謝大家的聆聽，歡迎提出任何問題與我們討論！">
+    <h1>總結與 Q&amp;A</h1>
+    <p style="max-width: 720px; line-height: 1.6;">
+      小島秀夫用近四十年的創作生涯證明了電子遊戲作為「第九藝術」的無限可能。<br>
+      堅持願景、勇於創新、不斷進化。
+    </p>
+    <div style="font-size: 26px; color: #fde047; margin-top: 16px;">感謝聆聽 · Thank You!</div>
+    <div class="footer-num">8 / 8</div>
+  </section>
+</div>
+
+<div class="notes-panel" id="notesBox">
+  <h3>講者備忘錄（Speaker Notes）</h3>
+  <div id="notesContent"></div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('counter');
+  const notesContent = document.getElementById('notesContent');
+  const notesBox = document.getElementById('notesBox');
+  let idx = 0;
+
+  function render() {
+    slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+    counter.textContent = `${idx + 1} / ${slides.length}`;
+    notesContent.textContent = slides[idx].getAttribute('data-notes') || '';
+  }
+  function next() { idx = (idx + 1) % slides.length; render(); }
+  function prev() { idx = (idx - 1 + slides.length) % slides.length; render(); }
+  function toggleNotes() { notesBox.classList.toggle('hidden'); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') next();
+    if (e.key === 'ArrowLeft') prev();
+  });
+  render();
+</script>
+</body>
+</html>
